@@ -3,10 +3,12 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
+
+import org.json.JSONObject;
+
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
-import org.json.JSONObject;
 
 public class Converter {
   private static final Scanner scanner = new Scanner(System.in);
@@ -215,59 +217,6 @@ public class Converter {
   private static BigDecimal getAmountToConvert() {
     System.out.print("Enter amount to convert: ");
     return scanner.nextBigDecimal();
-  }
-
-  private static void performConversion(
-      String baseCurrency, String symbols, BigDecimal amount) {
-    OkHttpClient client = new OkHttpClient();
-
-    try {
-      cls();
-
-      String baseUrl = "https://api.apilayer.com/fixer/latest";
-      String url = baseUrl + "?symbols=" + symbols + "&base=" + baseCurrency;
-
-      Request request =
-          new Request.Builder()
-              .url(url)
-              .addHeader("apikey", "ynjG9UQvAVSbY42qE2VOxFFmTPE2twk1")
-              .build();
-
-      Response response = client.newCall(request).execute();
-
-      if (response.isSuccessful()) {
-        String responseBody = response.body().string();
-        JSONObject jsonObject = new JSONObject(responseBody);
-
-        if (jsonObject.has("rates")) {
-          JSONObject ratesObject = jsonObject.getJSONObject("rates");
-
-          for (String targetCurrency : symbols.split(",")) {
-            BigDecimal rate = ratesObject.getBigDecimal(targetCurrency);
-            BigDecimal convertedAmount = amount.multiply(rate);
-            System.out.println(amount + " " + baseCurrency + " = "
-                + convertedAmount + " " + targetCurrency);
-          }
-
-          System.out.println("\nDo you want to return to the main menu? (Y/N)");
-          String answer = scanner.next().toUpperCase();
-
-          if (answer.equals("Y")) {
-            cls();
-            mainMenu();
-          } else {
-            exit();
-          }
-        } else {
-          System.out.println("Rates data not found in API response");
-        }
-      } else {
-        System.out.println(
-            "Request failed: " + response.code() + " " + response.message());
-      }
-    } catch (Exception e) {
-      System.err.println("An error occurred: " + e.getMessage());
-    }
   }
 
   private static boolean isCurrencySupported(String currency) {
